@@ -1,0 +1,15 @@
+ipykernel
+git+https://github.com/rwightman/pytorch-image-models.git
+git+https://github.com/loopbio/PyTurboJPEG.git
+datasets
+transformers[torch]
+dm_control>=1.0.8
+nbconvert
+nbformat
+numpy
+numba
+pandas
+seaborn
+scikit-learn
+fastprogress
+torchmetrics
