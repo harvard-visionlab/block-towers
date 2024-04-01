@@ -1,4 +1,5 @@
 ipykernel
+ipywidgets
 git+https://github.com/rwightman/pytorch-image-models.git
 git+https://github.com/loopbio/PyTurboJPEG.git
 datasets

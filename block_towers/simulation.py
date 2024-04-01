@@ -2,7 +2,9 @@
     Code for generating BlockTowers and running physics simulations
     while storing the trajectories / video frames.
 '''
+import os
 from dm_control import mujoco
+from joblib import Parallel, delayed
 from fastprogress import progress_bar
 from pdb import set_trace
 
@@ -125,3 +127,8 @@ def generate_batch_initial_positions(gen_fun, num_blocks=3, side_length=.40, std
             unstable.append(positions)
             pbar.update(len(stable)+len(unstable))
     return stable, unstable
+
+def generate_trajectories_parallel(gen_fun, start_positions, num_workers=len(os.sched_getaffinity(0)), mb=None):
+    results = Parallel(n_jobs=num_workers)(delayed(gen_fun)(start_pos) for start_pos in progress_bar(start_positions, parent=mb))
+    simulations, frames = zip(*results)
+    return simulations, frames

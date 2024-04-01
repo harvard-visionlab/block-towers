@@ -3,7 +3,7 @@
 '''
 from datasets import Dataset, DatasetDict, concatenate_datasets
 from fastprogress import master_bar, progress_bar
-from .simulation import generate_batch_initial_positions
+from .simulation import generate_batch_initial_positions, generate_trajectories_parallel
 
 from pdb import set_trace
 
@@ -25,7 +25,7 @@ settings2 = {
 
 def generate_blocktower_dataset(settings, gen_fun, num_samples, pct_fall=.50, test_size=.20):
     data = dict()
-    for num_blocks,params in progress_bar(settings.items()):
+    for num_blocks,params in settings.items():
         stable, unstable = generate_batch_initial_positions(gen_fun, 
                                                             **params, 
                                                             num_samples=num_samples, 
@@ -44,3 +44,20 @@ def generate_blocktower_dataset(settings, gen_fun, num_samples, pct_fall=.50, te
     dataset = DatasetDict(data)
     
     return dataset
+
+def generate_trajectory_datasets(datasets, gen_fun, splits=['train', 'test']):    
+    mb = master_bar(datasets.items())
+    new_datasets = dict()
+    for config_name, dataset in mb:
+        dsets = dict()
+        for split in progress_bar(splits, parent=mb):
+            start_positions = dataset[split]['data']
+            simulations, _ = generate_trajectories_parallel(gen_fun, start_positions)
+            
+            dsets[split] = Dataset.from_dict(
+                dict(data=simulations, label=dataset[split]['label'], num_blocks=dataset[split]['num_blocks'])
+            )
+            
+        new_datasets[config_name] = DatasetDict(dsets)
+    
+    return DatasetDict(new_datasets)
